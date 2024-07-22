@@ -11,13 +11,17 @@ public class App {
 
     public static void main(String[] args) {
         
+
         try {
-            Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/veritabani","root", "root");
-            
+            System.out.println("Connecting to database...");
+            Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3307/customerservice", "admin", "admin");
+            System.out.println("Connection successful!");
         } catch (SQLException e) {
-            // TODO Auto-generated catch block
-           y
+            System.out.println("Connection failed!");
             e.printStackTrace();
         }
+            
     }
+        
+    
 }
