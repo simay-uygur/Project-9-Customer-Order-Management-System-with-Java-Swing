@@ -43,6 +43,31 @@ public class Helper {
 
         return true;
     }
+
+    public static void showMessage( String message){
+
+        String msg;
+        String title = switch (message) {
+            case "fill" -> {
+                msg = "Please fill all of the areas. ";
+                yield "Error!!";
+            }
+            case "done" -> {
+                msg = "Done.";
+                yield "Outcome";
+            }
+            case "error" -> {
+                msg = "An error occured.";
+                yield "Error";
+            }
+            default -> {
+                msg = message;
+                yield "Message ";
+            }
+        };
+
+        JOptionPane.showMessageDialog(null, msg, title,JOptionPane.INFORMATION_MESSAGE);
+    }
 }
 
 

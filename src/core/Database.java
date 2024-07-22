@@ -12,7 +12,7 @@ public class Database {
 
     private static Database instance = null;  
     private Connection connection = null;
-    private final String DB_URL =  "jdbc:mysql://localhost:3307/customerservice";
+    private final String DB_URL =  "jdbc:mysql://localhost:3307/veritabani";
     private final String USERNAME = "admin";
     private final String PASSWORD = "admin";
 
