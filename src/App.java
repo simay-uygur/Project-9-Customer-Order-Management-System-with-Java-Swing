@@ -1,19 +1,15 @@
 package src;
 import java.sql.Connection;
-import java.sql.Driver;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-
-import com.mysql.cj.xdevapi.Statement;
-
 import src.core.Database;
+import src.core.Helper;
+import src.view.LoginUI;
 
 public class App {
     
 
     public static void main(String[] args) {
-        
+        Helper.setTheme();
+        LoginUI loginUI = new LoginUI();
         Connection connection1 = Database.getInstance();
         Connection connection2 = Database.getInstance(); 
             
