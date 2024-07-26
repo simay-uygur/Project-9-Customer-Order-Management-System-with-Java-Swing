@@ -6,9 +6,12 @@ import src.entity.Customer;
 import src.entity.User;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 
 public class DashboardUI extends JFrame {
@@ -20,23 +23,28 @@ public class DashboardUI extends JFrame {
     private JTabbedPane pn_customer;
     private JScrollPane scrl_customer;
     private JTable tbl_customer;
-    private JButton button1;
     private JComboBox comboBox1;
     private JButton searchButton;
     private JButton clearButton;
     private JButton addNewButton;
     private JLabel lbl_fld_customer_name;
     private JLabel lbl_customer_type;
+    private JTextField textFieldname;
     private User loggedUser = null;
     private CustomerController customerController;
+    private DefaultTableModel tbmdl_customer = new DefaultTableModel();
+    private JPopupMenu popup_customer = new JPopupMenu();
 
     public DashboardUI(User user) {
+
         this.loggedUser = user;
         this.customerController = new CustomerController();
+
         if(user == null) {
             Helper.showMessage("error");
             dispose();
         }
+
         this.add(container);
         this.setTitle("CUSTOMER MANAGEMENT SYSTEM");
         this.setSize(1000,500);
@@ -57,11 +65,56 @@ public class DashboardUI extends JFrame {
             }
         });
 
-        //loadCustomerTable();
+        ArrayList<Customer> customers = this.customerController.findAll();
+        loadCustomerTable(customers);
+        loadCustomerPopUpMenu();
 
     }
 
+
+    private void loadCustomerPopUpMenu(){
+
+        this.tbl_customer.addMouseListener( new MouseAdapter() {
+            public void mousePressed(MouseEvent e) {
+                int selectedRow = tbl_customer.rowAtPoint(e.getPoint());
+                tbl_customer.setRowSelectionInterval(selectedRow,selectedRow); // to select the lines şn the table
+            }
+        });
+
+        this.popup_customer.add("Update").addActionListener( e -> {
+            System.out.println("Update clicked!");
+            int selectId = (int) tbl_customer.getValueAt(tbl_customer.getSelectedRow(),0);
+        });
+
+        this.popup_customer.add("Delete").addActionListener(e ->{
+            System.out.println("Delete clicked!");
+        } );
+
+        this.tbl_customer.setComponentPopupMenu(this.popup_customer) ;
+    }
+
     private void loadCustomerTable(ArrayList<Customer> customers) {
-        Object[] columncustomer =   {"ID", "Customer Type ",   };
+        Object[] columncustomer =   {"ID","Customer Name", "Customer Type ", "Phone", "Mail" , "Address" };
+
+        if(customers == null ) {
+            this.customerController.findAll();
+        }
+
+        //to clear the table whole 
+        DefaultTableModel  clearModel = (DefaultTableModel) tbl_customer.getModel();
+        clearModel.setRowCount(0);
+
+        this.tbmdl_customer.setColumnIdentifiers(columncustomer);
+        for(Customer customer : customers) {
+            Object[] rowcustomer = {customer.getId(), customer.getName(),
+                    customer.getType(), customer.getPhone(),
+                    customer.getMail(), customer.getAddress() };
+            this.tbmdl_customer.addRow(rowcustomer);
+        }
+
+        this.tbl_customer.setModel(tbmdl_customer);
+        this.tbl_customer.getTableHeader().setReorderingAllowed(false);
+        this.tbl_customer.getColumnModel().getColumn(0).setMaxWidth(50);
+        this.tbl_customer.setEnabled(false);
     }
 }

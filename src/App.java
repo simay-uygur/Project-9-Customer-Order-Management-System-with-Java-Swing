@@ -14,7 +14,7 @@ public class App {
     public static void main(String[] args) {
         Helper.setTheme();
         //LoginUI loginUI = new LoginUI();
-        Connection connection = Database.getInstance();
+        Connection connection = Database.getInstance(); 
 
         UserController userController = new UserController();
         User user = userController.findByLogIn("simayuygur09@gmail.com", "1212");
