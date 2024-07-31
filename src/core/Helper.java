@@ -32,6 +32,12 @@ public class Helper {
         return false ;
     }
 
+    public static void optionPaneDialogTR(){ //not necessary
+        UIManager.put("OptionPane.okButtonText", "OKAY");
+        UIManager.put("OptionPane.yesButtonText", "Yes");
+        UIManager.put("OptionPane.noButtonText", "No");
+    }
+
     public static boolean isEmailValid(String mail){
          // before @ and after @ . the dot after @
         if(mail == null || mail.trim().isEmpty()) return false;
@@ -47,6 +53,8 @@ public class Helper {
     public static void showMessage( String message){
 
         String msg;
+
+        optionPaneDialogTR();
         String title = switch (message) {
             case "fill" -> {
                 msg = "Please fill all of the areas. ";
@@ -67,6 +75,17 @@ public class Helper {
         };
 
         JOptionPane.showMessageDialog(null, msg, title,JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    public static boolean confirm(String str){
+        optionPaneDialogTR();
+        String message ;
+        if (str.equals("sure")){
+            message = "Are you sure you want to do this process ?";
+        } else {
+            message = str;
+        }
+        return JOptionPane.showConfirmDialog(null, message, "Are you sure ?", JOptionPane.YES_NO_OPTION) == 0;
     }
 }
 

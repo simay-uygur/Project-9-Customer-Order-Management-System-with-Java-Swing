@@ -13,7 +13,8 @@ public class Customer {
         COMPANY
     }
 
-    public Customer() {
+    public Customer(){
+        this.id = 0;
     }
 
     public int getId() {
