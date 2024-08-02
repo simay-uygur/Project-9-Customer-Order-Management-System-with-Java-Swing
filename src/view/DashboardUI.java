@@ -126,15 +126,16 @@ public class DashboardUI extends JFrame {
     private void loadCustomerTable(ArrayList<Customer> customers) {
         Object[] columncustomer =   {"ID","Customer Name", "Customer Type ", "Phone", "Mail" , "Address" };
 
-        if(customers == null ) {
-            this.customerController.findAll();
+        if(customers == null  || customers.isEmpty()) {
+            customers = this.customerController.findAll();
         }
 
         //to clear the table whole 
-        DefaultTableModel  clearModel = (DefaultTableModel) tbl_customer.getModel();
+        DefaultTableModel clearModel = (DefaultTableModel) tbl_customer.getModel();
         clearModel.setRowCount(0);
 
         this.tbmdl_customer.setColumnIdentifiers(columncustomer);
+
         for(Customer customer : customers) {
             Object[] rowcustomer = {customer.getId(),
                     customer.getName(),
@@ -152,3 +153,6 @@ public class DashboardUI extends JFrame {
         this.tbl_customer.setEnabled(false);
     }
 }
+
+
+//debug findall and load customers methods it updates and deletes but doesnt show

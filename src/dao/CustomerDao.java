@@ -74,16 +74,16 @@ public class CustomerDao {
         String query = "UPDATE customer SET " +
                         "name = ? ," +
                         "type = ? ," +
-                        "mail = ? ," +
                         "phone = ? ," +
-                        "address = ? ," +
+                        "mail = ? ," +
+                        "address = ? " +
                         "WHERE id = ? " ;
         try {
             PreparedStatement pr = this.con.prepareStatement(query);
             pr.setString(1, customer.getName());
             pr.setString(2, customer.getType().toString());
-            pr.setString(3, customer.getMail());
-            pr.setString(4, customer.getPhone());
+            pr.setString(4, customer.getMail());
+            pr.setString(3, customer.getPhone());
             pr.setString(5, customer.getAddress());
             pr.setInt(6, customer.getId());
             return pr.executeUpdate() != -1;
