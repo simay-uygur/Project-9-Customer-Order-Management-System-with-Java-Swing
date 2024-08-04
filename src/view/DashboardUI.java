@@ -20,13 +20,13 @@ public class DashboardUI extends JFrame {
     private JTabbedPane pn_customer;
     private JScrollPane scrl_customer;
     private JTable tbl_customer;
-    private JComboBox comboBox1;
+    private JComboBox comboBoxCustomerType;
     private JButton searchButton;
     private JButton clearButton;
     private JButton addNewButton;
     private JLabel lbl_fld_customer_name;
     private JLabel lbl_customer_type;
-    private JTextField textFieldname;
+    private JTextField fld_customer_name_text;
     private User loggedUser = null;
     private CustomerController customerController;
     private DefaultTableModel tbmdl_customer = new DefaultTableModel();
@@ -67,11 +67,14 @@ public class DashboardUI extends JFrame {
         loadCustomerPopUpMenu();
         loadCustomerButtonEvent();
 
+        this.comboBoxCustomerType.setModel(new DefaultComboBoxModel<>(Customer.CUSTYPE.values()));
+        this.comboBoxCustomerType.setSelectedItem(null) ;
+
     }
 
     private void loadCustomerButtonEvent()
     {
-        addNewButton.addActionListener(e -> {
+        this. addNewButton.addActionListener(e -> {
             CustomerUI customerUI = new CustomerUI(new Customer());
             customerUI.addWindowListener(new WindowAdapter() {
                 @Override
@@ -81,6 +84,22 @@ public class DashboardUI extends JFrame {
             });
 
         } );
+
+        this.searchButton.addActionListener(e -> {
+            ArrayList<Customer> filteredCustomers = this.customerController.filterCustomer(  
+                    this.fld_customer_name_text.getText() ,
+                    (Customer.CUSTYPE) this.comboBoxCustomerType.getSelectedItem()
+            ); 
+            
+            loadCustomerTable(filteredCustomers);  
+        });
+
+
+        this.clearButton.addActionListener(e -> {
+             loadCustomerTable(null);
+             this.fld_customer_name_text.setText(null);
+              this.comboBoxCustomerType.setSelectedItem(null);   
+        });
     }
 
     private void loadCustomerPopUpMenu(){

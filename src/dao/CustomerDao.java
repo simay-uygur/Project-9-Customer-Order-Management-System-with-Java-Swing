@@ -47,7 +47,7 @@ public class CustomerDao {
             pr.setString(3, customer.getPhone());
             pr.setString(4, customer.getMail());
             pr.setString(5, customer.getAddress());
-            return pr.executeUpdate() != -1;
+            return pr.executeUpdate() != -1; // if i dont give a default value in sql it gives exception.
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }//reutnr true
@@ -119,5 +119,17 @@ public class CustomerDao {
         return cus;
     }
 
+    public ArrayList<Customer> query(String query) {
+        ArrayList<Customer> customers = new ArrayList<>();
+        try {
+            ResultSet rs = this.con.createStatement().executeQuery(query);
+            while (rs.next()){
+                customers.add(this.match(rs));
+            }
+        } catch (SQLException e) {
+
+        }
+        return customers;
+    }
 
 }
