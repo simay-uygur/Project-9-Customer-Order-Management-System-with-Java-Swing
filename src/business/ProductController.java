@@ -1,7 +1,9 @@
 package src.business;
 
 import src.core.Helper;
+import src.core.Item;
 import src.dao.ProductDao;
+import src.entity.Customer;
 import src.entity.Product;
 
 import java.util.ArrayList;
@@ -18,7 +20,7 @@ public class ProductController {
     }
 
     public boolean update(Product product) {
-        if(this.getById(product.getId()) == null) {
+        if(this.findProductById(product.getId()) == null) {
             Helper.showMessage(product.getId() + "the product with this id does not exist");
             return false;
         }
@@ -26,7 +28,7 @@ public class ProductController {
     }
 
     public boolean delete(int id) {
-        if(this.getById(id) == null)
+        if(this.findProductById(id) == null)
         {
             Helper.showMessage("Product not found with id " + id);
             return false;
@@ -34,7 +36,37 @@ public class ProductController {
         return this.productDao.delete(id); //not sure
     }
 
-    public Product getById(int id) {
+    public Product findProductById(int id) {
         return this.productDao.getById(id);
     }
+
+
+    public  ArrayList<Product> filterProduct(String name, String code, Item isStock){
+        String query = "SELECT * FROM product";
+
+        ArrayList<String> whereList = new ArrayList<>();
+
+        if(name.length() > 0){
+            whereList.add("name LIKE '%"+name+"%'");
+        }
+
+        if(code.length() > 0){
+            whereList.add("code LIKE '%"+code+"%'");
+        }
+
+        if(isStock != null){
+            if(isStock.getKey() ==1){
+                whereList.add("isStock > 0");
+            } else {
+                whereList.add("isStock <= 0");
+            }
+        }
+
+        if(!whereList.isEmpty()){
+            query += " WHERE " + String.join(" AND ", whereList);
+        }
+
+        return this.productDao.query(query);
+    }
+
 }

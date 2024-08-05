@@ -3,7 +3,7 @@ package src.view;
 import src.business.CustomerController;
 import src.business.ProductController;
 import src.core.Helper;
-import src.dao.ProductDao;
+import src.core.Item;
 import src.entity.Customer;
 import src.entity.Product;
 import src.entity.User;
@@ -37,7 +37,7 @@ public class DashboardUI extends JFrame {
     private JPanel pnl_filter_product;
     private JTextField fld_product_name;
     private JTextField fld_product_code;
-    private JComboBox cmb_product_stock;
+    private JComboBox<Item > cmb_product_stock;
     private JButton btn_search_product;
     private JButton btn_clear_product;
     private JLabel lbl_product_name;
@@ -94,10 +94,14 @@ public class DashboardUI extends JFrame {
         this.comboBoxCustomerType.setSelectedItem(null) ;
 
         //product tab
-        //product tab
         loadProductTable(null);
         loadProductPopUpMenu();
         loadProductButtonEvent();
+        this.cmb_product_stock.addItem(new Item(1, "In Stock"));
+        this.cmb_product_stock.addItem(new Item(2, "Not In Stock"));
+        this.cmb_product_stock.setSelectedItem(null); //default selected one this is for
+
+
 
     }
 
@@ -110,6 +114,22 @@ public class DashboardUI extends JFrame {
                     loadProductTable(null);
                 }
             });
+        });
+
+        this.btn_search_product.addActionListener(e -> {
+            ArrayList<Product> filteredProducts = this.productController.filterProduct(
+                    this.fld_customer_name_text.getText(),
+                    this.fld_product_code.getText(),
+                    (Item)this.cmb_product_stock.getSelectedItem()
+            );
+            loadProductTable(filteredProducts);
+        });
+
+        this.btn_clear_product.addActionListener(e -> {
+             this.fld_product_code.setText(null);
+             this.fld_product_name.setText(null);
+             this.cmb_product_stock.setSelectedItem(null);
+             loadProductTable(null);
         });
     }
 
@@ -124,7 +144,7 @@ public class DashboardUI extends JFrame {
 
         this.popup_product.add("Update").addActionListener( e -> {
             int selectId = Integer.parseInt(this.tbl_product.getValueAt(tbl_product.getSelectedRow(), 0).toString());
-            ProductUI productUI = new ProductUI(this.productController.getById(selectId));
+            ProductUI productUI = new ProductUI(this.productController.findProductById(selectId));
             productUI.addWindowListener(new WindowAdapter() {
                 @Override
                 public void windowClosed(WindowEvent e) {
