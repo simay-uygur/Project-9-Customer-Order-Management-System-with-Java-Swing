@@ -1,8 +1,11 @@
 package src.view;
 
 import src.business.CustomerController;
+import src.business.ProductController;
 import src.core.Helper;
+import src.dao.ProductDao;
 import src.entity.Customer;
+import src.entity.Product;
 import src.entity.User;
 
 import javax.swing.*;
@@ -17,7 +20,7 @@ public class DashboardUI extends JFrame {
     private JPanel panelTop;
     private JLabel lbl_top;
     private JButton EXITButton;
-    private JTabbedPane pn_customer;
+    private JTabbedPane pane_menu;
     private JScrollPane scrl_customer;
     private JTable tbl_customer;
     private JComboBox comboBoxCustomerType;
@@ -27,15 +30,33 @@ public class DashboardUI extends JFrame {
     private JLabel lbl_fld_customer_name;
     private JLabel lbl_customer_type;
     private JTextField fld_customer_name_text;
+    private JPanel pnl_product;
+    private JPanel pnl_customer;
+    private JScrollPane scrl_product;
+    private JTable tbl_product;
+    private JPanel pnl_filter_product;
+    private JTextField fld_product_name;
+    private JTextField fld_product_code;
+    private JComboBox cmb_product_stock;
+    private JButton btn_search_product;
+    private JButton btn_clear_product;
+    private JLabel lbl_product_name;
+    private JLabel lbl_product_code;
+    private JLabel lbl_product_stock_status;
+    private JButton btn_add_product;
     private User loggedUser = null;
     private CustomerController customerController;
+    private ProductController productController;
     private DefaultTableModel tbmdl_customer = new DefaultTableModel();
+    private DefaultTableModel tbmdl_product = new DefaultTableModel();
     private JPopupMenu popup_customer = new JPopupMenu();
+    private JPopupMenu popup_product = new JPopupMenu();
 
     public DashboardUI(User user) {
 
         this.loggedUser = user;
         this.customerController = new CustomerController();
+        this.productController = new ProductController();
 
         if(user == null) {
             Helper.showMessage("error");
@@ -63,6 +84,8 @@ public class DashboardUI extends JFrame {
         });
 
         ArrayList<Customer> customers = this.customerController.findAll();
+
+        //customer tab
         loadCustomerTable(customers);
         loadCustomerPopUpMenu();
         loadCustomerButtonEvent();
@@ -70,10 +93,91 @@ public class DashboardUI extends JFrame {
         this.comboBoxCustomerType.setModel(new DefaultComboBoxModel<>(Customer.CUSTYPE.values()));
         this.comboBoxCustomerType.setSelectedItem(null) ;
 
+        //product tab
+        //product tab
+        loadProductTable(null);
+        loadProductPopUpMenu();
+        loadProductButtonEvent();
+
     }
 
-    private void loadCustomerButtonEvent()
-    {
+    private void loadProductButtonEvent() {
+        this.btn_add_product.addActionListener(e -> {
+            ProductUI productUI = new ProductUI(new Product());
+            productUI.addWindowListener(new WindowAdapter() {
+                @Override
+                public void windowClosed(WindowEvent e) {
+                    loadProductTable(null);
+                }
+            });
+        });
+    }
+
+    private void loadProductPopUpMenu(){
+
+        this.tbl_product.addMouseListener( new MouseAdapter() {
+            public void mousePressed(MouseEvent e) {
+                int selectedRow = tbl_product.rowAtPoint(e.getPoint());
+                tbl_product.setRowSelectionInterval(selectedRow,selectedRow); // to select the lines şn the table
+            }
+        });
+
+        this.popup_product.add("Update").addActionListener( e -> {
+            int selectId = Integer.parseInt(this.tbl_product.getValueAt(tbl_product.getSelectedRow(), 0).toString());
+            ProductUI productUI = new ProductUI(this.productController.getById(selectId));
+            productUI.addWindowListener(new WindowAdapter() {
+                @Override
+                public void windowClosed(WindowEvent e) {
+                    loadProductTable(null);
+                }
+            });
+        });
+        this.popup_product.add("Delete").addActionListener(e -> {
+            int selectId = Integer.parseInt(this.tbl_product.getValueAt(tbl_product.getSelectedRow(), 0).toString());
+            if(Helper.confirm("sure")){
+                if(this.productController.delete(selectId)){
+                    Helper.showMessage("done");
+                    loadProductTable(null);
+                } else {
+                    Helper.showMessage("error");
+                }
+            }
+
+        });
+
+        this.tbl_product.setComponentPopupMenu(this.popup_product);
+
+    }
+
+    private void loadProductTable(ArrayList<Product> products) {
+        Object[] columnproduct =   {"ID","Product Name", "Product Code ", "Price", "Stock"  };
+
+        if(products == null  || products.isEmpty()) {
+            products = this.productController.findAll();
+        }
+        
+        DefaultTableModel clearModel = (DefaultTableModel) tbl_product.getModel();
+        clearModel.setRowCount(0);
+
+        this.tbmdl_product.setColumnIdentifiers(columnproduct);
+
+        for(Product product : products) {
+            Object[] rowcustomer = {product.getId(),
+                    product.getName(),
+                    product.getCode(),
+                    product.getPrice(),
+                    product.getStock()
+            };
+            this.tbmdl_product.addRow(rowcustomer);
+        }
+
+        this.tbl_product.setModel(tbmdl_product);
+        this.tbl_product.getTableHeader().setReorderingAllowed(false);
+        this.tbl_product.getColumnModel().getColumn(0).setMaxWidth(50);
+        this.tbl_product.setEnabled(false);
+    }
+
+    private void loadCustomerButtonEvent()  {
         this. addNewButton.addActionListener(e -> {
             CustomerUI customerUI = new CustomerUI(new Customer());
             customerUI.addWindowListener(new WindowAdapter() {
@@ -98,7 +202,7 @@ public class DashboardUI extends JFrame {
         this.clearButton.addActionListener(e -> {
              loadCustomerTable(null);
              this.fld_customer_name_text.setText(null);
-              this.comboBoxCustomerType.setSelectedItem(null);   
+              this.comboBoxCustomerType.setSelectedItem(null);
         });
     }
 
@@ -172,6 +276,3 @@ public class DashboardUI extends JFrame {
         this.tbl_customer.setEnabled(false);
     }
 }
-
-
-//debug findall and load customers methods it updates and deletes but doesnt show
