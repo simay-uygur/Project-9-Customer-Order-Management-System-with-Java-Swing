@@ -123,6 +123,7 @@ public class DashboardUI extends JFrame {
         loadBasketTable();
         loadBasketButtonEvent();
         loadBasketCustomerCombo();
+
     }
 
     private void loadBasketCustomerCombo() {
@@ -144,6 +145,13 @@ public class DashboardUI extends JFrame {
                 loadBasketTable();
             } else {
                 Helper.showMessage("error");
+            }
+        });
+
+        this.btn_basket_order.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
             }
         });
     }

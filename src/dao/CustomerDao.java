@@ -111,9 +111,8 @@ public class CustomerDao {
         cus.setId(rs.getInt("id"));
         cus.setAddress(rs.getString("address"));
         cus.setPhone(rs.getString("phone"));
-        cus.setType(Customer.CUSTYPE.valueOf(rs.getString("type"))); //valueof is logical
+        cus.setType(Customer.CUSTYPE.valueOf(rs.getString("type")));
         cus.setName(rs.getString("name"));
-        cus.setId(rs.getInt("id"));
 
         return cus;
     }
