@@ -2,7 +2,6 @@ package src.dao;
 
 import src.core.Database;
 import src.entity.Customer;
-import src.entity.User;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

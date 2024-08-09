@@ -1,9 +1,11 @@
 package src.view;
 
+import src.business.BasketController;
 import src.business.CustomerController;
 import src.business.ProductController;
 import src.core.Helper;
 import src.core.Item;
+import src.entity.Basket;
 import src.entity.Customer;
 import src.entity.Product;
 import src.entity.User;
@@ -12,6 +14,7 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.*;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 public class DashboardUI extends JFrame {
@@ -44,11 +47,25 @@ public class DashboardUI extends JFrame {
     private JLabel lbl_product_code;
     private JLabel lbl_product_stock_status;
     private JButton btn_add_product;
+    private JPanel pnl_order;
+    private JPanel pnl_basket_top;
+    private JScrollPane scrl_basket;
+    private JComboBox<Item> cmb_basket_customer;
+    private JLabel lbl_combo_casket;
+    private JLabel lbl_amount_total;
+    private JLabel lbl_amount_total_enter;
+    private JLabel lbl_product_amount;
+    private JLabel lbl_product_amount_enter;
+    private JButton btn_basket_clear;
+    private JButton btn_basket_order;
+    private JTable tbl_basket;
     private User loggedUser = null;
     private CustomerController customerController;
     private ProductController productController;
+    private BasketController basketController;
     private DefaultTableModel tbmdl_customer = new DefaultTableModel();
     private DefaultTableModel tbmdl_product = new DefaultTableModel();
+    private DefaultTableModel tbmdl_basket = new DefaultTableModel();
     private JPopupMenu popup_customer = new JPopupMenu();
     private JPopupMenu popup_product = new JPopupMenu();
 
@@ -57,6 +74,7 @@ public class DashboardUI extends JFrame {
         this.loggedUser = user;
         this.customerController = new CustomerController();
         this.productController = new ProductController();
+        this.basketController = new BasketController();
 
         if(user == null) {
             Helper.showMessage("error");
@@ -101,7 +119,65 @@ public class DashboardUI extends JFrame {
         this.cmb_product_stock.addItem(new Item(2, "Not In Stock"));
         this.cmb_product_stock.setSelectedItem(null); //default selected one this is for
 
+        //basket tab
+        loadBasketTable();
+        loadBasketButtonEvent();
+        loadBasketCustomerCombo();
+    }
 
+    private void loadBasketCustomerCombo() {
+        ArrayList<Customer> customers = this.customerController.findAll();
+        this.cmb_basket_customer.removeAllItems();
+
+        for(Customer customer : customers) {
+            int comboKey = customer.getId();
+            String comboValue = customer.getName();
+            this.cmb_basket_customer.addItem(new Item(comboKey, comboValue ));
+        }
+        this.cmb_basket_customer.setSelectedItem(null);
+    }
+
+    private void loadBasketButtonEvent(){
+        this.btn_basket_clear.addActionListener(e -> {
+            if(this.basketController.clear()){
+                Helper.showMessage("done");
+                loadBasketTable();
+            } else {
+                Helper.showMessage("error");
+            }
+        });
+    }
+
+    private void loadBasketTable() {
+        Object[] columnproduct =   {"ID","Product Name", "Product Code ", "Price", "Stock"  };
+        ArrayList<Basket> baskets = this.basketController.getAll();
+
+        DefaultTableModel clearModel = (DefaultTableModel) tbl_basket.getModel();
+        clearModel.setRowCount(0);
+
+        this.tbmdl_basket.setColumnIdentifiers(columnproduct);
+        int totalPrice = 0;
+
+        for(Basket product : baskets) {
+            Object[] rowproduct = {
+                    product.getId(),
+                    product.getProduct().getName(),
+                    product.getProduct().getCode(),
+                    product.getProduct().getPrice(),
+                    product.getProduct().getStock()
+            };
+            this.tbmdl_basket.addRow(rowproduct);
+
+            totalPrice += product.getProduct().getPrice();
+        }
+        this.lbl_amount_total_enter.setText(totalPrice + " euros ");
+        this.lbl_product_amount_enter.setText(baskets.size()  + " many ");
+
+
+        this.tbl_basket.setModel(tbmdl_basket);
+        this.tbl_basket.getTableHeader().setReorderingAllowed(false);
+        this.tbl_basket.getColumnModel().getColumn(0).setMaxWidth(30);
+        this.tbl_basket.setEnabled(false);
 
     }
 
@@ -142,6 +218,22 @@ public class DashboardUI extends JFrame {
             }
         });
 
+        this.popup_product.add("Add to the Basket").addActionListener(e -> {
+            int selectId = Integer.parseInt(this.tbl_product.getValueAt(tbl_product.getSelectedRow(), 0).toString());
+            Product basketProduct = this.productController.findProductById(selectId);
+
+            if(basketProduct.getStock() <=0){
+                Helper.showMessage("This product has no stock");
+            } else {
+                Basket basket = new Basket(selectId);
+                if(this.basketController.save(basket)){
+                    Helper.showMessage("done");
+                    loadBasketTable();
+                } else {
+                      Helper.showMessage("error");
+                }
+            }
+        });
         this.popup_product.add("Update").addActionListener( e -> {
             int selectId = Integer.parseInt(this.tbl_product.getValueAt(tbl_product.getSelectedRow(), 0).toString());
             ProductUI productUI = new ProductUI(this.productController.findProductById(selectId));
@@ -149,6 +241,7 @@ public class DashboardUI extends JFrame {
                 @Override
                 public void windowClosed(WindowEvent e) {
                     loadProductTable(null);
+                    loadBasketTable();
                 }
             });
         });
@@ -158,6 +251,7 @@ public class DashboardUI extends JFrame {
                 if(this.productController.delete(selectId)){
                     Helper.showMessage("done");
                     loadProductTable(null);
+                    loadBasketTable();
                 } else {
                     Helper.showMessage("error");
                 }
@@ -182,18 +276,19 @@ public class DashboardUI extends JFrame {
         this.tbmdl_product.setColumnIdentifiers(columnproduct);
 
         for(Product product : products) {
-            Object[] rowcustomer = {product.getId(),
+            Object[] rowproduct = {
+                    product.getId(),
                     product.getName(),
                     product.getCode(),
                     product.getPrice(),
                     product.getStock()
             };
-            this.tbmdl_product.addRow(rowcustomer);
+            this.tbmdl_product.addRow(rowproduct);
         }
 
         this.tbl_product.setModel(tbmdl_product);
         this.tbl_product.getTableHeader().setReorderingAllowed(false);
-        this.tbl_product.getColumnModel().getColumn(0).setMaxWidth(50);
+        this.tbl_product.getColumnModel().getColumn(0).setMaxWidth(30);
         this.tbl_product.setEnabled(false);
     }
 
@@ -244,6 +339,7 @@ public class DashboardUI extends JFrame {
                 @Override
                 public void windowClosed(WindowEvent e) {
                     loadCustomerTable(null );
+                    loadBasketCustomerCombo();
                 }
             });
 
@@ -256,6 +352,7 @@ public class DashboardUI extends JFrame {
                 if(this.customerController.delete(selectId)){
                     Helper.showMessage("success");
                     loadCustomerTable(null ); //updates table
+                    loadBasketCustomerCombo();
                 } else{
                     Helper.showMessage("error");
                 }
@@ -296,3 +393,5 @@ public class DashboardUI extends JFrame {
         this.tbl_customer.setEnabled(false);
     }
 }
+
+//stock column in product doesn't exist   --> needs fixing

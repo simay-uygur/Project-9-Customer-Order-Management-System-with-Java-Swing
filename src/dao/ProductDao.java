@@ -65,18 +65,18 @@ public class ProductDao {
 
 
     public boolean update(Product product) {
-        String query = "UPDATE customer SET " +
+        String query = "UPDATE product SET " +
                 "name = ? ," +
                 "code = ? ," +
                 "price = ? ," +
-                "stock = ? ," +
+                "stock = ? " +
                 "WHERE id = ? " ;
         try {
             PreparedStatement pr = this.con.prepareStatement(query);
             pr.setString(1, product.getName());
             pr.setString(2, product.getCode());
-            pr.setInt(3, product.getStock());
-            pr.setInt(4, product.getPrice());
+            pr.setInt(3, product.getPrice());
+            pr.setInt(4, product.getStock());
             pr.setInt(5, product.getId());
             return pr.executeUpdate() != -1;
         } catch (SQLException e) {
