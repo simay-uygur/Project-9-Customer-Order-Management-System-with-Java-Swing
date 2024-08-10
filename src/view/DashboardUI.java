@@ -1,20 +1,17 @@
 package src.view;
 
 import src.business.BasketController;
+import src.business.CartController;
 import src.business.CustomerController;
 import src.business.ProductController;
 import src.core.Helper;
 import src.core.Item;
-import src.entity.Basket;
-import src.entity.Customer;
-import src.entity.Product;
-import src.entity.User;
+import src.entity.*;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.*;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 public class DashboardUI extends JFrame {
@@ -23,7 +20,7 @@ public class DashboardUI extends JFrame {
     private JPanel panelTop;
     private JLabel lbl_top;
     private JButton EXITButton;
-    private JTabbedPane pane_menu;
+    private JTabbedPane pnl_all_order;
     private JScrollPane scrl_customer;
     private JTable tbl_customer;
     private JComboBox comboBoxCustomerType;
@@ -59,13 +56,18 @@ public class DashboardUI extends JFrame {
     private JButton btn_basket_clear;
     private JButton btn_basket_order;
     private JTable tbl_basket;
+    private JTable tbl_cart;
+    private JScrollPane scrl_cart;
     private User loggedUser = null;
     private CustomerController customerController;
     private ProductController productController;
     private BasketController basketController;
+    private CartController cartController;
     private DefaultTableModel tbmdl_customer = new DefaultTableModel();
     private DefaultTableModel tbmdl_product = new DefaultTableModel();
     private DefaultTableModel tbmdl_basket = new DefaultTableModel();
+    private DefaultTableModel tmdbl_cart = new DefaultTableModel();
+
     private JPopupMenu popup_customer = new JPopupMenu();
     private JPopupMenu popup_product = new JPopupMenu();
 
@@ -75,6 +77,7 @@ public class DashboardUI extends JFrame {
         this.customerController = new CustomerController();
         this.productController = new ProductController();
         this.basketController = new BasketController();
+        this.cartController = new CartController();
 
         if(user == null) {
             Helper.showMessage("error");
@@ -124,6 +127,38 @@ public class DashboardUI extends JFrame {
         loadBasketButtonEvent();
         loadBasketCustomerCombo();
 
+        //cart table
+        loadCartTable();
+
+    }
+
+    private void loadCartTable() {
+        Object[] columnproduct =   {"ID","Customer Name", "Product Name ", "Price", "Order Date", "Note"  };
+        ArrayList<Cart> carts = this.cartController.findAll();
+
+        DefaultTableModel clearModel = (DefaultTableModel) tbl_cart.getModel();
+        clearModel.setRowCount(0);
+
+        this.tmdbl_cart.setColumnIdentifiers(columnproduct);
+
+        for(Cart cart : carts) {
+            Object[] rowcart = {
+                    cart.getId(),
+                    cart.getCustomer().getName(),
+                    cart.getProduct().getName(),
+                    cart.getPrice(),
+                    cart.getDate(),
+                    cart.getNote()
+            };
+
+            this.tmdbl_cart.addRow(rowcart);
+
+        }
+
+        this.tbl_cart.setModel(tmdbl_cart);
+        this.tbl_cart.getTableHeader().setReorderingAllowed(false);
+        this.tbl_cart.getColumnModel().getColumn(0).setMaxWidth(30);
+        this.tbl_cart.setEnabled(false);
     }
 
     private void loadBasketCustomerCombo() {
@@ -153,6 +188,31 @@ public class DashboardUI extends JFrame {
             public void actionPerformed(ActionEvent e) {
 
             }
+        });
+
+        this.btn_basket_order.addActionListener(e -> {
+            Item selectedcustomer = (Item) this.cmb_basket_customer.getSelectedItem();
+            if(selectedcustomer == null) {
+                Helper.showMessage("Please select a customer");
+            } else {
+                Customer customer = this.customerController.findByIdCustomer(selectedcustomer.getKey());
+                ArrayList<Basket> baskets = this.basketController.getAll();
+                if(customer.getId() == 0 ) {
+                    Helper.showMessage("This customer doesn't exist!");
+                } else if( baskets.size() == 0) {
+                    Helper.showMessage("Please add a product to the basket!!!");
+                } else {
+                    CartUI cartui = new CartUI(customer, this);
+                    cartui.addWindowListener(new WindowAdapter() {
+                        @Override
+                        public void windowClosed(WindowEvent e) {
+                            loadBasketTable();
+                            loadProductTable(null);
+                        }
+                    });
+                }
+            }
+
         });
     }
 
@@ -399,6 +459,10 @@ public class DashboardUI extends JFrame {
         this.tbl_customer.getTableHeader().setReorderingAllowed(false);
         this.tbl_customer.getColumnModel().getColumn(0).setMaxWidth(50);
         this.tbl_customer.setEnabled(false);
+    }
+
+    public void loadCart(){
+        this.loadCartTable();
     }
 }
 

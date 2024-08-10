@@ -9,7 +9,7 @@ public class CartController {
 
     private final CartDao cartDao = new CartDao();
 
-    public boolean savw(Cart cart) {
+    public boolean save(Cart cart) {
         return this.cartDao.save(cart);
     }
 
