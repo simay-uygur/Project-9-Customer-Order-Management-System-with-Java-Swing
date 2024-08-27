@@ -46,7 +46,7 @@ public class CustomerDao {
             pr.setString(3, customer.getPhone());
             pr.setString(4, customer.getMail());
             pr.setString(5, customer.getAddress());
-            return pr.executeUpdate() != -1; // if i dont give a default value in sql it gives exception.
+            return pr.executeUpdate() != -1;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }//reutnr true
